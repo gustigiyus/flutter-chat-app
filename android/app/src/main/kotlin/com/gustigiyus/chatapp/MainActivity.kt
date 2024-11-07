@@ -1,4 +1,4 @@
-package com.gustigiyus.flutterchatapp
+package com.gustigiyus.chatapp
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -35,7 +35,9 @@ class MyApp extends StatelessWidget {
         stream: auth.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const HomePage();
+            return HomePage(
+              currentUser: null,
+            );
           }
           return const LoginPage();
         },

@@ -7,6 +7,7 @@ import 'package:flutter_chat_firebase/core/constants/colors.dart';
 import 'package:flutter_chat_firebase/core/extensions/build_context_ext.dart';
 import 'package:flutter_chat_firebase/presentations/pages/home_page.dart';
 import 'package:flutter_chat_firebase/presentations/pages/register.page.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +24,29 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isObscure = true;
 
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void doLogin() async {
     try {
       await auth.signInWithEmailAndPassword(
@@ -30,13 +54,15 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text,
       );
 
-      context.pushReplacement(const HomePage());
+      context.pushReplacement(HomePage(
+          // currentUser: null,
+          ));
     } catch (e) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Registration Failed'),
+            title: const Text('Login Failed'),
             content: Text(e.toString()),
             actions: [
               TextButton(
@@ -80,10 +106,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           const SpaceHeight(32),
-          Image.asset(
-            "assets/images/google.png",
-            width: 40,
-            height: 40,
+          InkWell(
+            onTap: () async {
+              final userCredential = await signInWithGoogle();
+              context.pushReplacement(HomePage(
+                currentUser: userCredential,
+              ));
+            },
+            child: Image.asset(
+              "assets/images/google.png",
+              width: 40,
+              height: 40,
+            ),
           ),
           const SpaceHeight(24),
           Row(
