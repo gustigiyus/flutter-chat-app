@@ -5,6 +5,8 @@ import 'package:flutter_chat_firebase/core/components/custom_text_field.dart';
 import 'package:flutter_chat_firebase/core/components/spaces.dart';
 import 'package:flutter_chat_firebase/core/constants/colors.dart';
 import 'package:flutter_chat_firebase/core/extensions/build_context_ext.dart';
+import 'package:flutter_chat_firebase/data/datasources/firebase_datasource.dart';
+import 'package:flutter_chat_firebase/data/models/user_model.dart';
 import 'package:flutter_chat_firebase/presentations/pages/home_page.dart';
 import 'package:flutter_chat_firebase/presentations/pages/register.page.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -109,6 +111,15 @@ class _LoginPageState extends State<LoginPage> {
           InkWell(
             onTap: () async {
               final userCredential = await signInWithGoogle();
+              if (!await FirebaseDatasource.instance
+                  .isUserExist(userCredential.user!.uid)) {
+                final userModel = UserModel(
+                    id: userCredential.user!.uid,
+                    username: userCredential.user!.displayName!,
+                    email: userCredential.user!.email!,
+                    photo: userCredential.user!.photoURL!);
+                await FirebaseDatasource.instance.setUserToFirestore(userModel);
+              }
               context.pushReplacement(HomePage(
                 currentUser: userCredential,
               ));
